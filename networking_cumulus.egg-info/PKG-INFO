@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: networking-cumulus
+Version: 0.0.1.dev1
+Summary: Cumulus Linux ML2 Neutron Driver
+Home-page: https://github.com/openstack/networking-generic-switch
+Author: Mirantis
+Author-email: mos-ironic@mirantis.com
+License: UNKNOWN
+Description: 
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python

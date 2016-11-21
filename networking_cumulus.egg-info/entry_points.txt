@@ -1,0 +1,6 @@
+[console_scripts]
+neutron-cumulus-agent = networking_cumulus.ml2.agent.cumulus_agent:main
+
+[neutron.ml2.mechanism_drivers]
+cumulus = networking_cumulus.ml2.mech_driver.cumulus_mech:CumulusLBAgentMechanismDriver
+
