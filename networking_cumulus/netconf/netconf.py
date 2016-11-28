@@ -75,22 +75,3 @@ class ConfFile:
         kwargs = {}
         cmd = ['sudo', 'ifreload', '-c' ]
         result = processutils.execute(*cmd, **kwargs)
-    
-
-def _get_int_cfg_file_name(int_name):
-    return CFG_PATH+"%s.intf" % int_name
-
-def add_interface_to_network(segmentation_id, int_name):
-    with ConfFile(INT_BRIDGE) as cfg:
-        cfg.ensure_opt_contain_value('bridge-ports', int_name)
-
-    with ConfFile(int_name) as int_cfg:
-        int_cfg.ensure_opt_contain_value('bridge-access', segmentation_id)
-
-def create_network(segmentation_id):
-    with ConfFile(INT_BRIDGE) as cfg:
-        cfg.ensure_opt_contain_value('bridge-vids', segmentation_id)
-
-def remove_network(segmentation_id):
-   with ConfFile(INT_BRIDGE) as cfg:
-       cfg.ensure_opt_not_contain_value('bridge-vids', segmentation_id)

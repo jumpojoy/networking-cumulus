@@ -57,21 +57,23 @@ class CumulusLBAgentMechanismDriver(mech_agent.SimpleAgentMechanismDriverBase):
 
     def delete_port_postcommit(self, context):
         """Delete port non-database commit event."""
-#        port = context.current
-#        import rpdb
-#        debugger = rpdb.Rpdb(port=12345)
-#        debugger.set_trace()
-#        if port and port['device_owner'].startswith('compute'):
-#            segment = context.top_bound_segment
-#            if (segment and
-#                    segment[api.NETWORK_TYPE] in self.supported_network_types):
-#                LOG.debug("Cumulus Mech driver - delete_port_postcommit for "
-#                          "port: %s with network_type as %s.",
-#                          port['id'], segment[api.NETWORK_TYPE])
-#                vni = segment[api.SEGMENTATION_ID]
-#                network_type = segment[api.NETWORK_TYPE]
-#                host = port[portbindings.HOST_ID]
-        pass
+        port = context.current
+        if port and port[portbindings.VNIC_TYPE] in self.supported_vnic_types:
+            segment = context.top_bound_segment
+            binding_profile = port[portbindings.PROFILE]
+            local_link_information = binding_profile.get('local_link_information')
+            if (segment and
+                    segment[api.NETWORK_TYPE] in self.supported_network_types and
+                        local_link_information):
+                for llc in local_link_information:
+                    switch_name = llc.get('switch_info')
+                    port_id = llc.get('port_id')
+                    LOG.debug("Removing port $(port_id)s on switch %(switch_name)s from "
+                              "vlan %(segmentation_id)s", {'port_id': port_id,
+                                                           'switch_name': switch_name,
+                                                           'segmentation_id': segmentation_id})
+
+                    self.agent_notifier.delete_port(host=switch_name, port_id=port_id, segmentation_id=segmentation_id)
 
     def create_network_postcommit(self, context):
         self.agent_notifier.create_network_cast(current=context.current)
@@ -98,6 +100,6 @@ class CumulusLBAgentMechanismDriver(mech_agent.SimpleAgentMechanismDriverBase):
                                                            'switch_name': switch_name,
                                                            'segmentation_id': segmentation_id})
                         self.agent_notifier.plug_port_to_network(host=switch_name, port_id=port_id, segmentation_id=segmentation_id)
-                        context.set_binding(segment[driver_api.ID],
+                        context.set_binding(segment[api.ID],
                             portbindings.VIF_TYPE_OTHER, {})
     
