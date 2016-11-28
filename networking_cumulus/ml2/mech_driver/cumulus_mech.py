@@ -85,7 +85,19 @@ class CumulusLBAgentMechanismDriver(mech_agent.SimpleAgentMechanismDriverBase):
         for segment in segments:
             if segment[api.NETWORK_TYPE] in self.supported_network_types:
                 port = context.current
+                binding_profile = port[portbindings.PROFILE]
+                local_link_information = binding_profile.get('local_link_information')
                 vnic_type = port[portbindings.VNIC_TYPE]
-                if vnic_type in self.supported_vnic_types:
-                    self.agent_notifier.bind_port_call(current=context.current)
+                if vnic_type in self.supported_vnic_types and local_link_information:
+                    for llc in local_link_information:
+                        switch_name = llc.get('switch_info')
+                        port_id = llc.get('port_id')
+                        segmentation_id = segment.get('segmentation_id')
+                        LOG.debug("Adding port %(port_id)s on switch %(switch_name)s to vlan "
+                                  " %(segmentation_id)s", {'port_id': port_id,
+                                                           'switch_name': switch_name,
+                                                           'segmentation_id': segmentation_id})
+                        self.agent_notifier.plug_port_to_network(host=switch_name, port_id=port_id, segmentation_id=segmentation_id)
+                        context.set_binding(segment[driver_api.ID],
+                            portbindings.VIF_TYPE_OTHER, {})
     

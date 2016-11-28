@@ -43,7 +43,14 @@ class CumulusAgentRpcCallbacks(object):
             cfg.ensure_opt_not_contain_value('bridge-vids', str(segmentation_id))
         LOG.info("FIND ME: delete network RPC")
 
-    def bind_port(self, context, current, network_segments, network_current):
+    def plug_port_to_network(self, context, port_id, segmentation_id):
+        import pdb; pdb.set_trace()
+        with netconf.ConfFile(netconf.INT_BRIDGE) as cfg:
+            cfg.ensure_opt_contain_value('bridge-ports', port_id)
+
+        with netconf.ConfFile(port_id) as int_cfg:
+            int_cfg.ensure_opt_contain_value('bridge-access', str(segmentation_id))
+
         LOG.info("FIND ME: bind port RPC")
 
 
@@ -75,6 +82,6 @@ class CumulusRpcClientAPI(object):
         return self._get_cctxt(host).cast(self.context, 'delete_network',
                                           current=current)
 
-    def bind_port_call(self, current, host):
+    def plug_port_to_network(self, host, port_id, segmentation_id):
         return self._get_cctxt(host).call(
-            self.context, 'bind_port_call', current=current)
+            self.context, 'plug_port_to_network', port_id=port_id, segmentation_id=segmentation_id)
