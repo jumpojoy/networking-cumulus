@@ -21,6 +21,10 @@ from neutron.plugins.ml2 import managers
 from neutron.plugins.ml2 import rpc as plugin_rpc
 from neutron_lib import constants as common_const
 
+from neutron.extensions import providernet as pnet
+
+from networking_cumulus.netconf import netconf
+
 LOG = log.getLogger(__name__)
 
 class CumulusAgentRpcCallbacks(object):
@@ -28,24 +32,20 @@ class CumulusAgentRpcCallbacks(object):
     target = oslo_messaging.Target(version='1.2')
 
     def create_network(self, context, current):
-        import pdb; pdb.set_trace()
+        segmentation_id = current[pnet.SEGMENTATION_ID]
+        with netconf.ConfFile(netconf.INT_BRIDGE) as cfg:
+            cfg.ensure_opt_contain_value('bridge-vids', str(segmentation_id))
         LOG.info("FIND ME: create network RPC")
 
-    def create_network(self, context, current):
-        import pdb; pdb.set_trace()
+    def delete_network(self, context, current):
+        segmentation_id = current[pnet.SEGMENTATION_ID]
+        with netconf.ConfFile(netconf.INT_BRIDGE) as cfg:
+            cfg.ensure_opt_not_contain_value('bridge-vids', str(segmentation_id))
         LOG.info("FIND ME: delete network RPC")
-
-    def update_network(self, context, current, segment, original):
-        self.update_network_precommit(current, segment, original)
 
     def bind_port(self, context, current, network_segments, network_current):
         LOG.info("FIND ME: bind port RPC")
 
-    def post_update_port(self, context, current, original, segment):
-        self.update_port_postcommit(current, original, segment)
-
-    def delete_port(self, context, current, original, segment):
-        self.delete_port_postcommit(current, original, segment)
 
 class CumulusRpcClientAPI(object):
 
@@ -73,8 +73,8 @@ class CumulusRpcClientAPI(object):
 
     def delete_network_cast(self, current, host):
         return self._get_cctxt(host).cast(self.context, 'delete_network',
-                                      current=current)
+                                          current=current)
 
-    def bind_port_cast(self, current, host):
-        return self._get_cctxt(host).cast(
+    def bind_port_call(self, current, host):
+        return self._get_cctxt(host).call(
             self.context, 'bind_port_call', current=current)

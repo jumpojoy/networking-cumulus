@@ -32,6 +32,7 @@ from neutron import context
 from networking_cumulus._i18n import _, _LE, _LI, _LW
 from networking_cumulus.ml2.agent import cumulus_agent_rpc
 from networking_cumulus.common import constants as c_const
+from networking_cumulus.netconf import netconf
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -56,6 +57,7 @@ class CumulusAgent(object):
             'configurations': {},
             'agent_type': 'Cumulus Agent',
             'start_flag': True}
+        self.ensure_integration_bridge_exist()
         self.setup_rpc()
 
     def check_for_updates(self):
@@ -117,6 +119,10 @@ class CumulusAgent(object):
         else:
             LOG.warning(_LW("Report interval is not initialized."
                             "Unable to send heartbeats to Neutron Server."))
+
+    def ensure_integration_bridge_exist(self):
+        with netconf.ConfFile(netconf.INT_BRIDGE) as cfg:
+            cfg.ensure_opt_has_value('bridge-vlan-aware', 'yes')
 
 from neutron.common import config as common_config
 from networking_cumulus.common import config as cumulus_config
