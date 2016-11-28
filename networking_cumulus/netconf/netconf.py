@@ -12,7 +12,7 @@ class ConfFile:
 
     def __init__(self, int_name):
         self.int_name = int_name
-        self.path = _get_int_cfg_file_name(int_name)
+        self.path = self._get_int_cfg_file_name(int_name)
         self.data = OrderedDict()
 
     def _get_int_cfg_file_name(self, int_name):
