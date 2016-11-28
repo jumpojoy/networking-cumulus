@@ -48,7 +48,7 @@ class CumulusAgentRpcCallbacks(object):
             cfg.ensure_opt_contain_value('bridge-ports', port_id)
 
         with netconf.ConfFile(port_id) as int_cfg:
-            int_cfg.ensure_opt_contain_value('bridge-access', str(segmentation_id))
+            int_cfg.ensure_opt_has_value('bridge-access', str(segmentation_id))
 
     def delete_port_from_network(self, context, port_id, segmentation_id):
         with netconf.ConfFile(netconf.INT_BRIDGE) as cfg:

@@ -62,6 +62,7 @@ class CumulusLBAgentMechanismDriver(mech_agent.SimpleAgentMechanismDriverBase):
             segment = context.top_bound_segment
             binding_profile = port[portbindings.PROFILE]
             local_link_information = binding_profile.get('local_link_information')
+            segmentation_id = segment.get('segmentation_id')
             if (segment and
                     segment[api.NETWORK_TYPE] in self.supported_network_types and
                         local_link_information):
